@@ -832,7 +832,7 @@ def open_devices():
     global devices
     if devices is None:
         devices = [
-            open(device, 'rw')
+            open(device, 'w')
             for device in glob.glob('/dev/video*')]
         assert devices, 'No video devices found.'
 
