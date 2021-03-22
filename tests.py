@@ -134,7 +134,7 @@ def get_device_inputs(fd):
         input_ = v4l2.v4l2_input(index)
         try:
             ioctl(fd, v4l2.VIDIOC_ENUMINPUT, input_)
-        except IOError, e:
+        except IOError as e:
             assert e.errno == errno.EINVAL
             break
         yield input_
@@ -147,7 +147,7 @@ def get_device_outputs(fd):
         output = v4l2.v4l2_output(index)
         try:
             ioctl(fd, v4l2.VIDIOC_ENUMOUTPUT, output)
-        except IOError, e:
+        except IOError as e:
             assert e.errno == errno.EINVAL
             break
         yield output
@@ -162,7 +162,7 @@ def foreach_device_input(fd, func):
         if input_.index != original_index.value:
             try:
                 ioctl(fd, v4l2.VIDIOC_S_INPUT, v4l2.c_int(input_.index))
-            except IOError, e:
+            except IOError as e:
                 if e.errno == errno.EBUSY:
                     continue
                 else:
@@ -171,7 +171,7 @@ def foreach_device_input(fd, func):
 
     try:
         ioctl(fd, v4l2.VIDIOC_S_INPUT, original_index)
-    except IOError, e:
+    except IOError as e:
         if not (e.errno == errno.EBUSY):
             raise
 
@@ -184,7 +184,7 @@ def foreach_device_output(fd, func):
         if output_.index != original_index.value:
             try:
                 ioctl(fd, v4l2.VIDIOC_S_OUTPUT, v4l2.c_int(output.index))
-            except IOError, e:
+            except IOError as e:
                 if e.errno == errno.EBUSY:
                     continue
                 else:
@@ -193,7 +193,7 @@ def foreach_device_output(fd, func):
 
     try:
         ioctl(fd, v4l2.VIDIOC_S_INPUT, original_index)
-    except IOError, e:
+    except IOError as e:
         if not (e.errno == errno.EBUSY):
             raise
 
@@ -206,7 +206,7 @@ def get_device_standards(fd):
         std = v4l2.v4l2_standard(index)
         try:
             ioctl(fd, v4l2.VIDIOC_ENUMSTD, std)
-        except IOError, e:
+        except IOError as e:
             assert e.errno == errno.EINVAL
             break
         yield std
@@ -220,7 +220,7 @@ def get_device_controls(fd):
     while queryctrl.id < v4l2.V4L2_CID_LASTP1:
         try:
             ioctl(fd, v4l2.VIDIOC_QUERYCTRL, queryctrl)
-        except IOError, e:
+        except IOError as e:
             # this predefined control is not supported by this device
             assert e.errno == errno.EINVAL
             queryctrl.id += 1
@@ -232,7 +232,7 @@ def get_device_controls(fd):
     while True:
         try:
             ioctl(fd, v4l2.VIDIOC_QUERYCTRL, queryctrl)
-        except IOError, e:
+        except IOError as e:
             # no more custom controls available on this device
             assert e.errno == errno.EINVAL
             break
@@ -248,7 +248,7 @@ def get_device_controls_by_class(fd, control_class):
     while True:
         try:
             ioctl(fd, v4l2.VIDIOC_QUERYCTRL, queryctrl)
-        except IOError, e:
+        except IOError as e:
             assert e.errno == errno.EINVAL
             break
         if (v4l2.V4L2_CTRL_ID2CLASS(queryctrl.id) != control_class):
@@ -309,14 +309,14 @@ def test_VIDIOC_S_INPUT(fd):
     index = v4l2.c_int(0)
     try:
         ioctl(fd, v4l2.VIDIOC_S_INPUT, index)
-    except IOError, e:
+    except IOError as e:
         assert e.errno == errno.EBUSY
         return
 
     index.value = 1 << 31
     try:
         ioctl(fd, v4l2.VIDIOC_S_INPUT, index)
-    except IOError, e:
+    except IOError as e:
         assert e.errno == errno.EINVAL
 
 
@@ -346,7 +346,7 @@ def test_VIDIOC_S_OUTPUT(fd):
     index.value = 1 << 31
     try:
         ioctl(fd, v4l2.VIDIOC_S_OUTPUT, index)
-    except IOError, e:
+    except IOError as e:
         assert e.errno == errno.EINVAL
 
 
@@ -438,7 +438,7 @@ def test_VIDIOC_G_STD(fd):
         std_id = v4l2.v4l2_std_id()
         try:
             ioctl(fd, v4l2.VIDIOC_G_STD, std_id)
-        except IOError, e:
+        except IOError as e:
             assert e.errno == errno.EINVAL
             # input/output may not support a standard
             return
@@ -461,7 +461,7 @@ def test_VIDIOC_S_STD(fd):
         original_std_id = v4l2.v4l2_std_id()
         try:
             ioctl(fd, v4l2.VIDIOC_G_STD, original_std_id)
-        except IOError, e:
+        except IOError as e:
             assert e.errno == errno.EINVAL
             return
 
@@ -472,7 +472,7 @@ def test_VIDIOC_S_STD(fd):
         bad_std_id = v4l2.v4l2_std_id(1 << 31)
         try:
             ioctl(fd, v4l2.VIDIOC_S_STD, bad_std_id)
-        except IOError, e:
+        except IOError as e:
             assert e.errno == errno.EINVAL
 
         ioctl(fd, v4l2.VIDIOC_S_STD, original_std_id)
@@ -494,7 +494,7 @@ def test_VIDIOC_QUERYSTD(fd):
         std_id = v4l2.v4l2_std_id()
         try:
             ioctl(fd, v4l2.VIDIOC_QUERYSTD, std_id)
-        except IOError, e:
+        except IOError as e:
             # this ioctl might not be supported on this device
             assert e.errno == errno.EINVAL
             return
@@ -629,20 +629,20 @@ def test_VIDIOC_S_CTRL(fd):
             control.value = queryctrl.minimum - queryctrl.step
             try:
                 ioctl(fd, v4l2.VIDIOC_S_CTRL, control)
-            except IOError, e:
+            except IOError as e:
                 assert e.errno in (
                     errno.ERANGE, errno.EINVAL, errno.EIO)
             control.value = queryctrl.maximum + queryctrl.step
             try:
                 ioctl(fd, v4l2.VIDIOC_S_CTRL, control)
-            except IOError, e:
+            except IOError as e:
                 assert e.errno in (
                     errno.ERANGE, errno.EINVAL, errno.EIO)
             if queryctrl.step > 1:
                 control.value = queryctrl.default + queryctrl.step - 1
                 try:
                     ioctl(fd, v4l2.VIDIOC_S_CTRL, control)
-                except IOError, e:
+                except IOError as e:
                     assert e.errno == errno.ERANGE
 
             ioctl(fd, v4l2.VIDIOC_S_CTRL, original_control)
@@ -681,7 +681,7 @@ def test_VIDIOC_G_EXT_CTRLS(fd):
 
             try:
                 ioctl(fd, v4l2.VIDIOC_G_EXT_CTRLS, ext_controls)
-            except IOError, e:
+            except IOError as e:
                 assert e.errno == errno.EINVAL
                 assert not queryctrls
                 return
@@ -727,7 +727,7 @@ def test_VIDIOC_S_EXT_CTRLS(fd):
             # we store the original values so we can set them back later
             try:
                 ioctl(fd, v4l2.VIDIOC_G_EXT_CTRLS, ext_controls)
-            except IOError, e:
+            except IOError as e:
                 assert e.errno == errno.EINVAL
                 assert not queryctrls
                 return
@@ -745,7 +745,7 @@ def test_VIDIOC_S_EXT_CTRLS(fd):
                 control_array[-1].value64 = 1 << 32
                 try:
                     ioctl(fd, v4l2.VIDIOC_S_EXT_CTRLS, ext_controls)
-                except IOError, e:
+                except IOError as e:
                     # the driver may either prune the value or raise
                     # ERANGE if control value is out of bounds
                     assert e.errno == errno.ERANGE
@@ -791,7 +791,7 @@ def test_VIDIOC_TRY_EXT_CTRLS(fd):
             ext_controls.controls = control_array
             try:
                 ioctl(fd, v4l2.VIDIOC_TRY_EXT_CTRLS, ext_controls)
-            except IOError, e:
+            except IOError as e:
                 # driver may raise EINVAL if the control array has a
                 # length of zero
                 assert e.errno == errno.EINVAL
@@ -804,7 +804,7 @@ def test_VIDIOC_TRY_EXT_CTRLS(fd):
                 control.value64 = queryctrls[index].maximum + 1
             try:
                 ioctl(fd, v4l2.VIDIOC_TRY_EXT_CTRLS, ext_controls)
-            except IOError, e:
+            except IOError as e:
                 assert e.errno == errno.EINVAL
                 assert ext_controls.error_idx != 0
 
